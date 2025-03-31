@@ -6,7 +6,7 @@ class Graph:
         if node not in self.graph:
             self.graph[node] = []
 
-    def add_edge(self, source, destination, weight):
+    def add_edge(self, source, destination, weight, undirected=False):      # default as directed graph
         # add nodes if they do not exist
         self.add_node(source)
         self.add_node(destination)
@@ -14,6 +14,10 @@ class Graph:
         # add the edge
         self.graph[source].append((destination, weight))
 
+        # ensure covering double direction graph - London subway
+        if undirected == True:
+            self.graph[destination].append((source, weight))
+        
     def get_neighbors(self, node):
         if node in self.graph:
             return self.graph[node]

@@ -30,6 +30,7 @@ def A_star(graph, source, destination, heuristic):
                 came_from[neighbors] = current_node
             
     shortest_path = reconstruct_path(source, destination, came_from)
+    # the return element of A* is restricted to 
     return came_from, shortest_path
 
 
@@ -50,6 +51,7 @@ def reconstruct_path(source, destination, came_from):
 
 #  A start algorithm correctness test
 # test case that use unittest  实例
+
 class TestAStar(unittest.TestCase):
     def setUp(self):
         self.graph = Graph()
@@ -65,7 +67,7 @@ class TestAStar(unittest.TestCase):
         self.graph.add_edge((2, 0), (2, 1), 1)
         self.graph.add_edge((1, 2), (2, 2), 1)
         self.graph.add_edge((2, 1), (2, 2), 1)
-
+       
         # initialize attributes of instance TestAStar for source and destination nodes
         self.source = (0, 0)
         self.destination = (2, 2)
