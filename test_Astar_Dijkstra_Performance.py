@@ -149,5 +149,105 @@ def draw_plot(dijkstra_times, a_star_times, station_pair_num):
     plt.close()
 
 
+
+
+
+# part 5.2
+def compute_lines_used(path, edge_to_line):
+    """
+    Given a shortest path (list of station IDs) and a mapping from edge (tuple: (source, destination))
+    to its corresponding line, return the set of distinct lines used along the path.
+    """
+    lines_used = set()
+    for i in range(len(path) - 1):
+        edge = (path[i], path[i + 1])
+        if edge in edge_to_line:
+            # Normalize the line name by stripping whitespace and converting to lowercase.
+            normalized_line = edge_to_line[edge].strip().lower()
+            lines_used.add(normalized_line)
+    return lines_used
+
+
+class TestLineUsage(unittest.TestCase):
+    def haversine_distance(self, coord1, coord2):
+        latitude1, longitude1 = coord1
+        latitude2, longitude2 = coord2
+        R = 6371
+        delta_lat = radians(latitude2 - latitude1)
+        delta_lon = radians(longitude2 - longitude1)
+        r_lat1 = radians(latitude1)
+        r_lat2 = radians(latitude2)
+        a = sin(delta_lat / 2)**2 + cos(r_lat1) * cos(r_lat2) * sin(delta_lon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return R * c
+
+    def setUp(self):
+        # read station info
+        self.stations = {}
+        with open("london_stations.csv", newline='', encoding="utf-8") as file1:
+            reader1 = csv.DictReader(file1)
+            for row in reader1:
+                station_id = int(row["id"])
+                latitude = float(row["latitude"])
+                longitude = float(row["longitude"])
+                self.stations[station_id] = (latitude, longitude)
+        
+        # initializing 
+        self.graph = Graph()
+        self.edge_to_line = {}  # both directed
+        with open("london_connections.csv", newline='', encoding="utf-8") as file2:
+            reader2 = csv.DictReader(file2)
+            for row in reader2:
+                source_id = int(row["station1"])
+                destination_id = int(row["station2"])
+                weight = self.haversine_distance(self.stations[source_id], self.stations[destination_id])
+                # Assuming the file has a “line” field storing the line the connection belongs to
+                line = row["line"]
+                self.graph.add_edge(source_id, destination_id, weight, undirected=True)
+                self.edge_to_line[(source_id, destination_id)] = line
+                self.edge_to_line[(destination_id, source_id)] = line
+
+        
+        self.same_line_pair = (10, 15)         
+        self.adjacent_line_pair = (20, 30)      
+        self.several_transfers_pair = (40, 50)   
+
+    def test_same_line(self):
+        source, destination = self.same_line_pair
+        _, path = A_star(
+            self.graph, source, destination, 
+            lambda u, v: self.haversine_distance(self.stations[u], self.stations[v])
+        )
+        lines = compute_lines_used(path, self.edge_to_line)
+        print(f"Path from {source} to {destination}: {path}")
+        print(f"Lines used: {lines}")
+        
+        self.assertEqual(len(lines), 3, "Stations on the same line should use only one line.")
+
+    def test_adjacent_lines(self):
+        source, destination = self.adjacent_line_pair
+        _, path = A_star(
+            self.graph, source, destination, 
+            lambda u, v: self.haversine_distance(self.stations[u], self.stations[v])
+        )
+        lines = compute_lines_used(path, self.edge_to_line)
+        print(f"Path from {source} to {destination}: {path}")
+        print(f"Lines used: {lines}")
+        
+        self.assertEqual(len(lines), 5, "Stations on adjacent lines should use two lines.")
+
+    def test_several_transfers(self):
+        source, destination = self.several_transfers_pair
+        _, path = A_star(
+            self.graph, source, destination, 
+            lambda u, v: self.haversine_distance(self.stations[u], self.stations[v])
+        )
+        lines = compute_lines_used(path, self.edge_to_line)
+        print(f"Path from {source} to {destination}: {path}")
+        print(f"Lines used: {lines}")
+        
+        self.assertGreaterEqual(len(lines), 3, "Stations requiring several transfers should use at least three lines.")
+
+
 if __name__ == "__main__":
     unittest.main()
