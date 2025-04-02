@@ -93,5 +93,5 @@ class TestAStar(unittest.TestCase):
         print(shortest_path)
 
 if __name__ == "__main__":
-    # run the function
+    # run the function if execute this file directly
     unittest.main()
