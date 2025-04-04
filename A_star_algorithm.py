@@ -50,7 +50,7 @@ def reconstruct_path(source, destination, came_from):
 
 
 #  A start algorithm correctness test
-# test case that use unittest  实例
+# test case that use unittest  
 
 class TestAStar(unittest.TestCase):
     def setUp(self):
